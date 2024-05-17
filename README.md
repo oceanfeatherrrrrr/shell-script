@@ -1,2 +1,2 @@
 # shell-script
-my shell script example
+my shell script sample
