@@ -1,0 +1,25 @@
+#!/bin/bash
+#need grant 'replication client' to MYSQL_USER
+MYSQL_USER="agent"
+MYSQL_PASS="agent"
+MYSQL_HOST="localhost"
+MYSQL_PORT="3306"
+
+check_replication_status(){
+        #Obtain all required replication statuses
+        REPL_STATUS=$(mysql -h$MYSQL_HOST -P$MYSQL_PORT -u$MYSQL_USER -p$MYSQL_PASS -e "show slave status\G" | grep -E "Slave_IO_Running|Slave_SQL_Running:|Seconds_Behind_Master")
+        #split
+        IO_Running=$(echo "$REPL_STATUS" | grep "Slave_IO_Running" | awk '{print $2}')
+        SQL_Running=$(echo "$REPL_STATUS" | grep "Slave_SQL_Running:" | awk '{print $2}')
+        SECONDS_BEHIND_MASTER=$(echo "$REPL_STATUS" | grep "Seconds_Behind_Master" | awk '{print $2}')
+
+        if [ "$IO_Running" == "YES" ] && [ "SQL_Running" == "YES" ];then
+                echo "OK: MySQL replication is running."
+                if [ -n "$SECONDS_BEHIND_MASTER" ] && [ "$SECONDS_BEHIND_MASTER" -gt 0 ];then
+                        echo "WARN: Replication delay is $SECONDS_BEHIND_MASTER seconds."
+                fi
+        else
+                echo "CRITICAL: MySQL replication is not running. IO: $IO_Running, SQL: $SQL_Running"
+        fi
+}
+check_replication_status
