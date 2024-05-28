@@ -1,0 +1,27 @@
+#!/bin/bash
+  
+source_path=/var/www/html
+tar_path=/opt/backup_data
+date=$(date +%Y-%m-%d)          #get time
+ex_file=*.tmp                   #excluded file
+
+tar -zcf ${tar_path}/web_file_${date}.tar.gz --exclude=$ex_file ${source_path}
+
+file_total=$(ls ${tar_path} | wc -l)
+echo "${date} file backup in ${tar_path} with tar ,the total file is ${file_total}"
+
+#delete file if num ge 5
+if [ $file_total -ge 5 ];then
+        lftp 192.168.99.5 << EOF
+        cd pub
+        mput -q ${tar_path}/*
+        quit
+EOF
+        if [ $? -ne 0 ];then
+                echo "upload failed,plz check file or service"
+                exit
+        else
+                rm -rf ${tar_path}/web_file*
+                echo "upload ftp success"
+        fi
+fi
