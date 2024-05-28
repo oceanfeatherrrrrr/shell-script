@@ -1,0 +1,22 @@
+#!/bin/bash
+  
+#make sure user's privileges
+DB_USER="test"
+DB_PASS="test"
+DB_NAME="test"
+DB_HOST="localhost"
+BACKUP_DIR="/MySQL_BACKUP"
+BACK_FILE="${DB_NAME}_$(date +%Y%m%d%H%M%S).sql"
+
+#check dir
+mkdir -p $BACKUP_DIR
+
+#use mysqldump backup table
+mysqldump -h $DB_HOST -u $DB_USER -p$DB_PASS $DB_NAME > $BACKUP_DIR/$BACK_FILE
+
+#check backup
+if [ $? -eq 0 ];then
+        echo "MySQL database backup completed successfully: $BACKUP_DIR/$BACKUP_FILE"
+else
+        echo "MySQL database backup failed!"
+fi
